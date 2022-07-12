@@ -67,7 +67,10 @@ app.get('/get_assignments', async(req, res) => {
 //Scrapping Functions 
 async function login(email, password) {
     //First we create a new browser and page instance
-    const browser = await puppeteer.launch()
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox','--disable-setuid-sandbox']
+      })
     const page = await browser.newPage()
     await page.goto('https://www.gradescope.com/login')
     await page.waitForSelector('input[name=commit]')
@@ -98,7 +101,10 @@ async function login(email, password) {
 //login to Mudd account
 async function altLogin(user, password, schoolName){
     //First we create a new browser and page instance
-    const browser = await puppeteer.launch()
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox','--disable-setuid-sandbox']
+      })
     const page = await browser.newPage()
     //Go to the Gradescope school-credential login school selection page
     await page.goto('https://www.gradescope.com/saml')
@@ -172,7 +178,10 @@ async function get_classes() {
         const cookiesString = await fs.readFile('./cookies.json')
         const cookies = JSON.parse(cookiesString)
     
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox','--disable-setuid-sandbox']
+          })
         const page = await browser.newPage()
         await page.setCookie(...cookies)
         await page.goto('https://www.gradescope.com/account')
@@ -192,7 +201,10 @@ async function get_assignments(id) {
     try {
         const cookiesString = await fs.readFile('./cookies.json')
         const cookies = JSON.parse(cookiesString)
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox','--disable-setuid-sandbox']
+          })
         const page = await browser.newPage()
         await page.setCookie(...cookies)
         await page.goto('https://www.gradescope.com'+id)
