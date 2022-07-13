@@ -25,8 +25,7 @@ app.get('/login', async (req, res) => {
     const password = req.query.pass
 
     const response = await login(email, password)
-
-    if (response[0] == true) {
+    if (response == true) {
         res.send('Successfully logged in')
     }
     else {
@@ -120,6 +119,7 @@ async function login(email, password) {
     if (url!= 'https://www.gradescope.com/account') {
         console.log('There was an error corresponding to login information')
         browser.close()
+        console.log("POG")
         return false
     }
 
