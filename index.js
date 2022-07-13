@@ -24,6 +24,21 @@ app.get('/login', async (req, res) => {
     const email = req.query.email
     const password = req.query.pass
 
+    const response = await login(email, password)
+
+    if (response[0] == true) {
+        res.send('Successfully logged in')
+    }
+    else {
+        res.statusCode = 201
+        res.send(response[1])
+    }
+})
+
+app.get('/altlogin', async(req, res) => {
+    console.log('Starting Duo Autho Login');
+    const email = req.query.email
+    const password = req.query.pass
     const response = await altLogin(email, password, "Harvey Mudd College")
 
     if (response[0] == true) {
@@ -69,15 +84,16 @@ app.get('/get_assignments', async(req, res) => {
     res.send(data)
 })
 
-app.get('/get_name', async(req, res) => {
-    console.log('Getting Name')
-    const data = await get_name()
-    if (data==false){
-        res.statusCode = 201
-        res.send('There was an issue getting your name')
-    }
-    res.send(data)
-})
+//This endpoint is currently not working
+// app.get('/get_name', async(req, res) => {
+//     console.log('Getting Name')
+//     const data = await get_name()
+//     if (data==false){
+//         res.statusCode = 201
+//         res.send('There was an issue getting your name')
+//     }
+//     res.send(data)
+// })
 
 
 //Scrapping Functions 
@@ -209,7 +225,7 @@ async function get_classes() {
         await page.goto('https://www.gradescope.com/account')
     
         const data = await page.evaluate(() => document.documentElement.outerHTML)
-        console.log(data)
+        // console.log(data)
         browser.close()
         // console.log(data)
         return data
@@ -251,6 +267,7 @@ async function get_assignments(id) {
 }
 
 async function get_name(){
+    //Somewhat not working, don't use this
     try {
         try {
             await fs.readFile('./cookies.json')
@@ -261,14 +278,15 @@ async function get_name(){
         const cookiesString = await fs.readFile('./cookies.json')
         const cookies = JSON.parse(cookiesString)
         const browser = await puppeteer.launch({
-            headless: true,
+            headless: false,
             args: ['--no-sandbox','--disable-setuid-sandbox']
           })
           //There is already a page that's created when the browser instance is created.  So we don't need to create a new page
         const page = (await browser.pages())[0]
+        await page.setCookie(...cookies)
         await page.goto('https://www.gradescope.com/account/edit')
         const data = await page.evaluate(() => document.documentElement.outerHTML)
-        browser.close()
+        // browser.close()
         return data
     } catch (e) {
         console.log(e)
