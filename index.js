@@ -45,6 +45,9 @@ app.get('/get_classes', async(req,res) => {
     if (data==false){
         res.statusCode = 201
         res.send('There was an error scrapping Classes')
+    } else if (data =='error'){
+        res.statusCode = 201
+        res.send('You are currently not logged in')
     }
     // classes = await parseClasses(data['data'])
     res.send(data)
@@ -59,6 +62,18 @@ app.get('/get_assignments', async(req, res) => {
     if (data==false) {
         res.statusCode = 201
         res.send('There was an error getting the assignments')
+    } else if (data == 'error'){
+        res.statusCode = 201
+        res.send('You are currently not logged in')
+    }
+    res.send(data)
+})
+
+app.get('/get_name', async(req, res) => {
+    console.log('Getting Name')
+    const data = await get_name()
+    if (data==false){
+
     }
     res.send(data)
 })
@@ -71,7 +86,7 @@ async function login(email, password) {
         headless: true,
         args: ['--no-sandbox','--disable-setuid-sandbox']
       })
-    const page = await browser.newPage()
+    const page = (await browser.pages())[0]
     await page.goto('https://www.gradescope.com/login')
     await page.waitForSelector('input[name=commit]')
 
@@ -105,7 +120,7 @@ async function altLogin(user, password, schoolName){
         headless: true,
         args: ['--no-sandbox','--disable-setuid-sandbox']
       })
-    const page = await browser.newPage()
+    const page = (await browser.pages())[0]
     //Go to the Gradescope school-credential login school selection page
     await page.goto('https://www.gradescope.com/saml')
     await page.waitForSelector('.samlSearch')
@@ -175,7 +190,12 @@ async function altLogin(user, password, schoolName){
 
 async function get_classes() {
     try {
-        const cookiesString = await fs.readFile('./cookies.json')
+        try {
+            const cookiesString = await fs.readFile('./cookies.json')
+        } catch(e) {
+            console.log(e)
+            return 'error'
+        }
         const cookies = JSON.parse(cookiesString)
     
         const browser = await puppeteer.launch({
@@ -199,8 +219,16 @@ async function get_classes() {
 
 async function get_assignments(id) {
     try {
-        const cookiesString = await fs.readFile('./cookies.json')
+        try {
+            const cookiesString = await fs.readFile('./cookies.json')
+
+        } catch (e) {
+            //This will catch if someone is trying to call any of the functions without having logged in before
+            console.log(e)
+            return 'error'
+        }
         const cookies = JSON.parse(cookiesString)
+
         const browser = await puppeteer.launch({
             headless: true,
             args: ['--no-sandbox','--disable-setuid-sandbox']
@@ -215,6 +243,23 @@ async function get_assignments(id) {
     } catch (e){
         console.log(e)
         return false
+    }
+}
+
+async function get_name(){
+    try {
+        const cookiesString = await fs.readFile('./cookies.json')
+        const cookies = JSON.parse(cookiesString)
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox','--disable-setuid-sandbox']
+          })
+          //There is already a page that's created when the browser instance is created.  So we don't need to create a new page
+        const page = (await browser.pages())[0]
+        await page.goto('https://www.gradescope.com/account/edit')
+        const data = await page.evaluate(() => document.documentElement.outerHTML)
+        browser.close()
+        return data
     }
 }
 
