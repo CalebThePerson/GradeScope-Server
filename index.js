@@ -247,20 +247,22 @@ async function get_assignments(id) {
 }
 
 async function get_name(){
-    try {
-        const cookiesString = await fs.readFile('./cookies.json')
-        const cookies = JSON.parse(cookiesString)
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox','--disable-setuid-sandbox']
-          })
-          //There is already a page that's created when the browser instance is created.  So we don't need to create a new page
-        const page = (await browser.pages())[0]
-        await page.goto('https://www.gradescope.com/account/edit')
-        const data = await page.evaluate(() => document.documentElement.outerHTML)
-        browser.close()
-        return data
-    }
+    // try {
+    //     const cookiesString = await fs.readFile('./cookies.json')
+    //     const cookies = JSON.parse(cookiesString)
+    //     const browser = await puppeteer.launch({
+    //         headless: true,
+    //         args: ['--no-sandbox','--disable-setuid-sandbox']
+    //       })
+    //       //There is already a page that's created when the browser instance is created.  So we don't need to create a new page
+    //     const page = (await browser.pages())[0]
+    //     await page.goto('https://www.gradescope.com/account/edit')
+    //     const data = await page.evaluate(() => document.documentElement.outerHTML)
+    //     browser.close()
+    //     return data
+    // } catch (e) {
+
+    // }
 }
 
 //Parsing Functions 
