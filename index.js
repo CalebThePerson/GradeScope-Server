@@ -209,6 +209,7 @@ async function get_classes() {
         await page.goto('https://www.gradescope.com/account')
     
         const data = await page.evaluate(() => document.documentElement.outerHTML)
+        console.log(data)
         browser.close()
         // console.log(data)
         return data
