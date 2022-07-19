@@ -99,7 +99,7 @@ app.get('/get_assignments', async(req, res) => {
 async function login(email, password) {
     //First we create a new browser and page instance
     const browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         args: ['--no-sandbox','--disable-setuid-sandbox']
       })
     const page = (await browser.pages())[0]
@@ -217,7 +217,7 @@ async function get_classes() {
         const cookies = JSON.parse(cookiesString)
     
         const browser = await puppeteer.launch({
-            headless: true,
+            headless: false,
             args: ['--no-sandbox','--disable-setuid-sandbox']
           })
         const page = await browser.newPage()
