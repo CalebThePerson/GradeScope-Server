@@ -4,8 +4,61 @@ const path = require("path");
 const puppeteer = require('puppeteer')
 const cheerio = require('cheerio')
 const cors = require('cors')
+const Realm = require('realm')
+
+
 const app = express()
 const port = process.env.PORT || 3001
+
+
+//Realm Things
+const App = new Realm.App({id: process.env.App_ID})
+const assignmentSchema = {
+    name : "Assignment",
+    properties: {
+        name: "string",
+        dueDate: "string",
+        category: "string?",
+        status: "string"
+    },
+    primaryKey: "name"
+}
+const realm = Realm.open({
+    path: "myrealm",
+    schema: [assignmentSchema],
+})
+
+async function realmLogin(email, password){
+    //Saves the email and password in a realmobject
+    const credentials = Realm.Credentials.emailPassword(
+        `${email}`,
+        `${password}`
+    )
+
+    try{
+        //Then passes that RealmObject through to the databae logging in
+        const user = await App.logIn(credentials)
+        console.log(user)
+        return user;
+    } catch (err) {
+        //If it's a first time user then we will assume that it's a new account
+        if (err.message === 'invalid username/password'){
+            realmRegister(email, password)
+        //If the user puts in right password but wrong email
+        } else if (err.message === 'name already in use') {
+            return 'Email already in use'
+            
+        } else {
+            console.error("failed to log in", err.message)
+        }
+    }
+}
+
+//Function that handles registering and then once registered it calls on the Login function
+async function realmRegister(email, password){
+    await App.emailPasswordAuth.registerUser({email, password})
+    realmLogin(email, password)
+}
 
 
 app.use(
@@ -25,6 +78,7 @@ app.get('/login', async (req, res) => {
     const password = req.query.pass
 
     const response = await login(email, password)
+    const user = await realmLogin(email, password)
     if (response == true) {
         res.send('Successfully logged in')
     }
@@ -99,7 +153,7 @@ app.get('/get_assignments', async(req, res) => {
 async function login(email, password) {
     //First we create a new browser and page instance
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: ['--no-sandbox','--disable-setuid-sandbox']
       })
     const page = (await browser.pages())[0]
@@ -293,10 +347,5 @@ async function get_name(){
         return false
     }
 }
-
-//Parsing Functions 
-
-
-//This function may be re-worked depending on how we want to get data and how this wants to be used
 
 
