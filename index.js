@@ -119,7 +119,6 @@ async function login(email, password) {
     if (url!= 'https://www.gradescope.com/account') {
         console.log('There was an error corresponding to login information')
         browser.close()
-        console.log("POG")
         return false
     }
 
@@ -134,7 +133,7 @@ async function login(email, password) {
 async function altLogin(user, password, schoolName){
     //First we create a new browser and page instance
     const browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         args: ['--no-sandbox','--disable-setuid-sandbox']
       })
     const page = (await browser.pages())[0]
@@ -153,16 +152,22 @@ async function altLogin(user, password, schoolName){
     await page.type('#ember533', password)
     await page.click('#authn-go-button')
     //Wait for Duo auth stuff to load
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(4000)
     //Click the "send me a push option"
-    if (await page.$('.positive') == null){
-        browser.close()
-        return [false, "Incorrect login info"]
-    }
+    // if (await page.$('.positive') == null){
+    //     browser.close()
+    //     return [false, "Incorrect login info"]
+    // }
 
-    await page.click('.positive')
     //You have 90 seconds to tap and approve request on duo phone app
     await page.waitForTimeout(10000)
+
+    //If this is the users first time, they need to select trust browser
+    if (await page.$('#trust-this-browser-label') != null){
+        console.log("pog")
+        await page.click("#trust-browser-button")
+        await page.waitForTimeout(4000)
+    } 
 
     //Alt login w/ Duo passcode
     // (Note: you will need to get working passcode before every run of this function, this is meant for those
@@ -199,7 +204,7 @@ async function altLogin(user, password, schoolName){
     //Then we save the cookies so we can load it in other functions rather than constnatly needing to login
     const cookies = await page.cookies()
     await fs.writeFile('./cookies.json', JSON.stringify(cookies, null, 2))
-    await page.screenshot({path: "screenshot.png", fullPage: true});
+    // await page.screenshot({path: "screenshot.png", fullPage: true});
     browser.close()
     return [true, "Login success!"]
 }
@@ -262,6 +267,7 @@ async function get_assignments(id) {
         return data
     } catch (e){
         console.log(e)
+        browser.close()
         return false
     }
 }
@@ -299,4 +305,9 @@ async function get_name(){
 
 //This function may be re-worked depending on how we want to get data and how this wants to be used
 
-
+//Helper Functions
+function delay(time) {
+    return new Promise(function(resolve) { 
+        setTimeout(resolve, time)
+    });
+ }
