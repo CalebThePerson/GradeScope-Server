@@ -84,15 +84,15 @@ app.get('/get_assignments', async(req, res) => {
 })
 
 //This endpoint is currently not working
-// app.get('/get_name', async(req, res) => {
-//     console.log('Getting Name')
-//     const data = await get_name()
-//     if (data==false){
-//         res.statusCode = 201
-//         res.send('There was an issue getting your name')
-//     }
-//     res.send(data)
-// })
+app.get('/get_name', async(req, res) => {
+    console.log('Getting Name')
+    const data = await get_name()
+    if (data==false){
+        res.statusCode = 201
+        res.send('There was an issue getting your name')
+    }
+    res.send(data)
+})
 
 
 //Scrapping Functions 
@@ -133,7 +133,7 @@ async function login(email, password) {
 async function altLogin(user, password, schoolName){
     //First we create a new browser and page instance
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: ['--no-sandbox','--disable-setuid-sandbox']
       })
     const page = (await browser.pages())[0]
@@ -290,6 +290,7 @@ async function get_name(){
           //There is already a page that's created when the browser instance is created.  So we don't need to create a new page
         const page = (await browser.pages())[0]
         await page.setCookie(...cookies)
+        await page.waitForTimeout(2000)
         await page.goto('https://www.gradescope.com/account/edit')
         const data = await page.evaluate(() => document.documentElement.outerHTML)
         // browser.close()
