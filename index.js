@@ -290,6 +290,7 @@ async function get_name(){
           //There is already a page that's created when the browser instance is created.  So we don't need to create a new page
         const page = (await browser.pages())[0]
         await page.setCookie(...cookies)
+        await page.waitForTimeout(2000)
         await page.goto('https://www.gradescope.com/account/edit')
         const data = await page.evaluate(() => document.documentElement.outerHTML)
         browser.close()
